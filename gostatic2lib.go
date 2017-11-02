@@ -110,6 +110,19 @@ func NewHTTPHandler() *HTTPHandler {
 	}
 }
 
+func (h *HTTPHandler) ServeFile(w http.ResponseWriter, r *http.Request, name string) {
+	file, exists := h.files[name]
+	if !exists || strings.LastIndex(name, ".") < 1 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", mime.TypeByExtension(name[strings.LastIndex(name, "."):]))
+	w.Header().Set("Content-Encoding", "gzip")
+
+	w.Write(file)
+}
+
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fileName := r.URL.Path
 	if fileName == "/" {
